@@ -1,10 +1,11 @@
 package ee.rene.decathlon.controller;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ee.rene.decathlon.entity.Result;
 import ee.rene.decathlon.repository.ResultRepository;
 import ee.rene.decathlon.service.PointsCalculator;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,38 +22,45 @@ public class ResultController {
         this.pointsCalculator = pointsCalculator;
     }
 
-    // Get all results
+    // Get all
     @GetMapping
     public List<Result> getResults() {
         return resultRepository.findAll();
     }
 
-    // Get results by event type
-    @GetMapping("/{eventType}")
-    public List<Result> getResultsByEvent(@PathVariable String eventType) {
-        return resultRepository.findByEventType(eventType);
-    }
-
-    // Add a single result
     @PostMapping
-    public Result addResult(@RequestBody Result result) {
-        int points = pointsCalculator.calculatePoints(result.getEventType(), result.getResult());
-        result.setPoints(points);
-        return resultRepository.save(result);
-    }
+    public ResponseEntity<?> addResult(@RequestBody String rawJson) {
+        System.out.println("Raw JSON received: " + rawJson); // Debugging
 
-    // Add multiple results
-    @PostMapping("/batch")
-    public List<Result> addResults(@RequestBody List<Result> results) {
-        for (Result result : results) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            Result result = objectMapper.readValue(rawJson, Result.class);
+            System.out.println("Mapped Result object: " + result);
+
+            if (result.getEventType() == null || result.getEventType().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Error: Event type is required");
+            }
+
             int points = pointsCalculator.calculatePoints(result.getEventType(), result.getResult());
             result.setPoints(points);
+            return ResponseEntity.status(HttpStatus.CREATED).body(resultRepository.save(result));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("JSON Mapping Error: " + e.getMessage());
         }
-        resultRepository.saveAll(results);
-        return resultRepository.findAll();
-    }
+    } //näide post: {
+            //"name": "Usain Bolt",
+          //"event_type": "100m Sprint",
+          //"result": 9.58
+                    //}
 
-    // Delete a result by ID
+
+//Error handler
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleGeneralException(Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Server Error: " + e.getMessage());
+        }
+
+    // Delete by ID
     @DeleteMapping("/{id}")
     public List<Result> deleteResult(@PathVariable Long id) {
         resultRepository.deleteById(id);
