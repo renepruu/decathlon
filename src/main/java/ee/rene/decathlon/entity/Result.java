@@ -20,6 +20,6 @@ public class Result {
     private double result;
     private int points;
 
-    @ManyToOne // A result is associated with one athlete
+    @ManyToOne // result -> 1 athlete
     private Athlete athlete;
 }

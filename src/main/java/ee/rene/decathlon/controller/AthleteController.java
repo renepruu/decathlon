@@ -28,22 +28,19 @@ public class AthleteController {
     // Get athlete by ID
     @GetMapping("/{id}")
     public ResponseEntity<Athlete> getAthleteById(@PathVariable Long id) {
-        return athleteRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.of(athleteRepository.findById(id));
     }
+
     @GetMapping("/{id}/total-points")
     public ResponseEntity<Integer> getTotalPoints(@PathVariable Long id) {
         List<Result> results = resultRepository.findByAthleteId(id);
-        if (results.isEmpty()) {
-            return ResponseEntity.notFound().build(); // Return 404 if no results found
+        int totalPoints = 0;
+        for (Result result : results) {
+            int points = result.getPoints();
+            totalPoints += points;
         }
-        int totalPoints = results.stream()
-                .mapToInt(Result::getPoints)
-                .sum();
         return ResponseEntity.ok(totalPoints);
     }
-    // Add a new athlete
     @PostMapping
     public Athlete addAthlete(@RequestBody Athlete athlete) {
         return athleteRepository.save(athlete);

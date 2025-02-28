@@ -1,6 +1,5 @@
 package ee.rene.decathlon.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import ee.rene.decathlon.entity.Athlete;
 import ee.rene.decathlon.entity.Result;
 import ee.rene.decathlon.repository.AthleteRepository;
@@ -12,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/results")
@@ -35,7 +33,6 @@ public class ResultController {
         return resultRepository.findAll();
     }
 
-    // Add a result
     @PostMapping
     public ResponseEntity<?> addResult(@RequestBody Result result) {
         System.out.println("Raw JSON received: " + result); // Debugging
@@ -55,10 +52,10 @@ public class ResultController {
         }
     }
 
-    // Get total points for an athlete
+    // total points - athlete
     @GetMapping("/athletes/{id}/total-points")
     public ResponseEntity<Integer> getTotalPoints(@PathVariable Long id) {
-        // Fetch results for the athlete by ID
+        //athlete by ID
         List<Result> results = resultRepository.findByAthleteId(id);
 
         // Check if results exist for the athlete
@@ -82,13 +79,10 @@ public class ResultController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Result not found");
             }
 
-            // Delete the result
             resultRepository.deleteById(id);
             return ResponseEntity.ok("Result deleted successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
         }
     }
-
-    // Get all athletes with their total points
 }
