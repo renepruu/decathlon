@@ -38,12 +38,10 @@ public class ResultController {
         System.out.println("Raw JSON received: " + result); // Debugging
 
         try {
-            // Find athlete by ID
             Athlete athlete = athleteRepository.findById(result.getAthlete().getId())
                     .orElseThrow(() -> new RuntimeException("Athlete not found"));
 
-            result.setAthlete(athlete); // Associate the result with the athlete
-
+            result.setAthlete(athlete);
             int points = pointsCalculator.calculatePoints(result.getEventType(), result.getResult());
             result.setPoints(points);
             return ResponseEntity.status(HttpStatus.CREATED).body(resultRepository.save(result));
@@ -60,7 +58,7 @@ public class ResultController {
 
         // Check if results exist for the athlete
         if (results.isEmpty()) {
-            return ResponseEntity.notFound().build(); // Return 404 if no results found
+            return ResponseEntity.notFound().build(); // Return 404 if no results
         }
 
         // Calculate total points
