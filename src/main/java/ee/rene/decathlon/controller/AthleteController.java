@@ -1,48 +1,60 @@
 package ee.rene.decathlon.controller;
 
 import ee.rene.decathlon.entity.Athlete;
-import ee.rene.decathlon.entity.Result;
 import ee.rene.decathlon.repository.AthleteRepository;
-import ee.rene.decathlon.repository.ResultRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin
 @RestController
-@RequestMapping("/athletes")
 public class AthleteController {
-
     @Autowired
-    private AthleteRepository athleteRepository;
-    @Autowired
-    private ResultRepository resultRepository;
+    AthleteRepository athleteRepository;
 
-    // Get all athletes
-    @GetMapping
-    public List<Athlete> getAllAthletes() {
+    @GetMapping("athletes")
+    public List<Athlete> getAthletes() {
         return athleteRepository.findAll();
     }
-
-    // Get athlete by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<Athlete> getAthleteById(@PathVariable Long id) {
-        return ResponseEntity.of(athleteRepository.findById(id));
-    }
-
-    @GetMapping("/{id}/total-points")
-    public ResponseEntity<Integer> getTotalPoints(@PathVariable Long id) {
-        List<Result> results = resultRepository.findByAthleteId(id);
-        int totalPoints = 0;
-        for (Result result : results) {
-            int points = result.getPoints();
-            totalPoints += points;
+    @PostMapping("athletes")
+    public List<Athlete> addAthlete(@RequestBody Athlete athlete) {
+        if (athlete.getId() != null) {
+            throw new RuntimeException("Id of athlete is already set");
         }
-        return ResponseEntity.ok(totalPoints);
+        if (athlete.getAge() <= 16){
+            throw new RuntimeException("Age of athlete is too low");
+        }
+        athleteRepository.save(athlete);
+        return athleteRepository.findAll();
     }
-    @PostMapping
-    public Athlete addAthlete(@RequestBody Athlete athlete) {
-        return athleteRepository.save(athlete);
+    @DeleteMapping("athletes{id}")
+    public List<Athlete> deleteAthlete(@PathVariable Long id) {
+        athleteRepository.deleteById(id);
+        return athleteRepository.findAll();
+    }
+    @PutMapping("athletes")
+    public List<Athlete> editAthlete(@RequestBody Athlete athlete) {
+        if (athlete.getId() != null) {
+            throw new RuntimeException("Id of athlete is already set");
+        }
+        if (athlete.getAge() <= 16){
+            throw new RuntimeException("Age of athlete is too low");
+        }
+        athleteRepository.save(athlete);
+        return athleteRepository.findAll();
+    }
+    @GetMapping("athletes{id}")
+    public Athlete getAthlete(@PathVariable Long id) {
+        return athleteRepository.findById(id).orElseThrow();
+    }
+    @GetMapping("/category-athletes")
+    public Page<Athlete> getCategoryAthletes(@RequestParam Long categoryId, Pageable pageable){
+        if (categoryId == -1){
+            return athleteRepository.findAll(pageable);
+        }
+        return athleteRepository.findByCategory_Id(categoryId, pageable);
     }
 }

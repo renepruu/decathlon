@@ -18,4 +18,7 @@ public class Athlete {
     private String name;
     private String country;
     private Integer age;
+    private boolean active;
+    @ManyToOne
+    private Category category;
 }
