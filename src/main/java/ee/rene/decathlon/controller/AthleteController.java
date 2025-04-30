@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 public class AthleteController {
     @Autowired
@@ -30,7 +30,7 @@ public class AthleteController {
         athleteRepository.save(athlete);
         return athleteRepository.findAll();
     }
-    @DeleteMapping("athletes{id}")
+    @DeleteMapping("athletes/{id}")
     public List<Athlete> deleteAthlete(@PathVariable Long id) {
         athleteRepository.deleteById(id);
         return athleteRepository.findAll();
@@ -46,7 +46,7 @@ public class AthleteController {
         athleteRepository.save(athlete);
         return athleteRepository.findAll();
     }
-    @GetMapping("athletes{id}")
+    @GetMapping("athletes/{id}")
     public Athlete getAthlete(@PathVariable Long id) {
         return athleteRepository.findById(id).orElseThrow();
     }
